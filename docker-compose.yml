@@ -36,6 +36,7 @@ services:
       STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL}
       FRONTEND_URL: ${FRONTEND_URL}
       FRONTEND_ADMIN_URL: ${FRONTEND_ADMIN_URL}
+      FRONT_ADMIN_SECURITY_URL: ${FRONT_ADMIN_SECURITY_URL}
       DOMAIN_NAME: ${DOMAIN_NAME}
       SCRAPING_API_URL: ${SCRAPING_API_URL}
       MAIL_HOST: ${MAIL_HOST}
@@ -102,7 +103,6 @@ services:
       - dropshop-back
     networks:
       - default
-
 volumes:
   mysql_data:
     name: drop-shop-back_mysql_data
