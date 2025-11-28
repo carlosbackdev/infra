@@ -6,10 +6,10 @@ services:
     container_name: mysql-dropshop
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
       MYSQL_DATABASE: shop
-      MYSQL_USER: root
-      MYSQL_PASSWORD: admin
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
     command: --default-authentication-plugin=mysql_native_password
     volumes:
       - mysql_data:/var/lib/mysql
