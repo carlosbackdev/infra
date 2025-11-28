@@ -1,0 +1,108 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-dropshop
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: shop
+      MYSQL_USER: root
+      MYSQL_PASSWORD: admin
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  dropshop-back:
+    build:
+      context: ../drop-shop-back
+    container_name: dropshop-back
+    restart: always
+    depends_on:
+      - mysql
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL}
+      STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      FRONTEND_ADMIN_URL: ${FRONTEND_ADMIN_URL}
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      SCRAPING_API_URL: ${SCRAPING_API_URL}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_ADMIN_USERNAME: ${MAIL_ADMIN_USERNAME}
+      STORE_URL: ${STORE_URL}
+      PHONE: ${PHONE}
+      STORE_LOGO_URL: ${STORE_LOGO_URL}
+    ports:
+      - "8080:8080"
+    networks:
+      - default
+  dropshop-frontend:
+    build:
+      context: ../moto-gear-avenue
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_IMAGE_BASE_URL: ${VITE_IMAGE_BASE_URL}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
+        VITE_GOOGLE_CLIENT_SECRET: ${VITE_GOOGLE_CLIENT_SECRET}
+        VITE_STRIPE_PUBLICABLE_KEY: ${VITE_STRIPE_PUBLICABLE_KEY}
+    container_name: dropshop-frontend
+    restart: always
+    ports:
+      - "8081:80"
+    depends_on:
+      - dropshop-back
+    networks:
+      - default
+  aliexpres-scrapping:
+    build:
+      context: ../aliexpres-scrapping
+      dockerfile: Dockerfile
+    container_name: aliexpres-scrapping
+    restart: always
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      PORT: 3001
+      NODE_ENV: production
+      HEADLESS: "true"
+      BROWSER: chromium
+      UPLOADS_DIR: /app/uploads
+    ports:
+      - "3001:3001"
+    networks:
+      - default
+    volumes:
+      - product-images:/app/uploads
+  admin-front:
+    build:
+      context: ../admin-front
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_IMAGE_BASE_URL: ${VITE_IMAGE_BASE_URL}
+    container_name: admin-front
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - dropshop-back
+    networks:
+      - default
+
+volumes:
+  mysql_data:
+    name: drop-shop-back_mysql_data
+  product-images:
+    driver: local
